@@ -1,0 +1,56 @@
+services:
+  llm_yingshi_leinuo:
+    container_name: llm_yingshi_leinuo_test
+    image: llm_yingshi_leinuo:V11.3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    # 网络模式：使用宿主机网络
+    network_mode: "host"
+    
+    # 端口映射（使用 host 模式时不需要，但保留以供参考）
+    # ports:
+    #   - "8022:8022"
+    
+    # 环境变量
+    environment:
+      - TZ=Asia/Shanghai
+      # VLLM 配置（如果需要修改，可以在这里添加）
+      # - VLLM_API_BASE_URL=http://192.168.1.101:6002/v1
+      # - VLLM_MODEL_NAME=Qwen3-30B-A3B-Instruct-2507
+      # Redis 配置（如果需要修改，可以在这里添加）
+      # - REDIS_URL=redis://:h8v@vqekDS@192.168.1.101:6379/0
+    
+    # 【重要】挂载提示词配置目录，支持外部修改
+    volumes:
+      - ./prompts:/app/prompts
+      # 如果需要持久化日志，可以添加日志目录挂载
+      # - ./logs:/app/logs
+    
+    # 重启策略
+    restart: unless-stopped
+    
+    # 资源限制（可选，根据需要调整）
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '4.0'
+    #       memory: 8G
+    #     reservations:
+    #       cpus: '2.0'
+    #       memory: 4G
+    
+    # 健康检查（可选）
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8022/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# 网络配置（使用 host 模式时不需要）
+# networks:
+#   default:
+#     driver: bridge
+

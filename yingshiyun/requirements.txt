@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+aiohttp
+aiomysql
+pandas
+openai
+langchain-core
+langchain-openai

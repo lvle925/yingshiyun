@@ -1,0 +1,32 @@
+
+
+services:
+  llm_yingshi_ziwei:
+    container_name: llm_yingshi_ziwei_test
+    image: llm_yingshi_ziwei:V11.3
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    # 网络模式：使用宿主机网络
+    network_mode: "host"
+    
+    # 环境变量
+    environment:
+      - TZ=Asia/Shanghai
+    
+    # 【重要】挂载 prompts/ 目录支持提示词热更新
+    volumes:
+      - ./prompts:/app/prompts
+    
+    # 重启策略
+    restart: unless-stopped
+    
+    # 健康检查（可选）
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7034/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+

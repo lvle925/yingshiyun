@@ -1,0 +1,64 @@
+import os
+from setuptools import setup, find_packages
+from setuptools.extension import Extension
+from Cython.Build import cythonize
+
+# --- 要编译的模块列表 ---
+# 我们将编译所有包含核心逻辑的模块
+modules_to_compile = [
+    "models",
+    # "prompt_logic",  # 【修改】不编译 prompt_logic.py，以便支持外部挂载和热更新
+    "monitoring",
+    "utils",
+    "ziwei_ai_function",
+    "tokenizer",
+    "prompt_cofig_jili",
+    "tiangan_function",
+    "liushifunction",
+    "security.verifier",
+    "database.db_manager",
+    "services.session_manager",
+    "services.ziwei_analyzer",
+    # "services.chat_processor",
+    "clients.shared_client",
+    "clients.vllm_client",
+    "clients.external_api_client",
+    "services.validation_rules",
+    "services.queryIntent",
+    "services.monitor"
+]
+
+# --- 动态生成 Extension 对象 ---
+extensions = []
+for module_path in modules_to_compile:
+    # 将 a.b.c 这样的模块路径转换为 a/b/c.py 文件路径
+    filepath = module_path.replace('.', os.sep) + '.py'
+
+    # 创建 Extension 对象
+    ext = Extension(
+        name=module_path,  # 编译后的模块名，保持原样
+        sources=[filepath]  # 源文件
+    )
+    extensions.append(ext)
+
+# --- Cythonize 编译 ---
+# compiler_directives 用于优化和控制编译行为
+# 'language_level': "3" 确保使用 Python 3 语法
+# 'infer_types': True 让 Cython 尝试推断类型以提高性能
+setup(
+    name="ZiweiAIServiceCore",
+    packages=find_packages(),  # 自动查找所有包 (带__init__.py的目录)
+    ext_modules=cythonize(
+        extensions,
+        compiler_directives={'language_level': "3", 'infer_types': True},
+        # 明确排除不需要或不适合编译为 C 的文件
+        exclude=[
+            "api_main.py",
+            "config.py",
+            "setup.py",
+            "services/chat_processor.py",
+        ]
+    ),
+    # zip_safe=False is often recommended for Cython projects
+    zip_safe=False,
+)
